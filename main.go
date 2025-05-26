@@ -22,25 +22,50 @@ func main() {
 	// }
 	// fmt.Println("Max name is : ", maxName)
 
+	// start := "Poison"
 	start := "Silver"
+	// end := "Lysergic acid diethylamide"
+	// end := "Lysergic acid"
 	end := "Light"
 	current := start
+	// current := "Silver"
+	// current := "Dimethylaminoethanol"
+	// current := "Diethylaminoethanol"
+
+	flag := false
+
 	var s []string
 	var err error
-
+	var currentIndex int
+	traversed := make(map[string]bool)
+	fmt.Printf("From %s to %s\n", start, end)
 	for current != end {
-		fmt.Println(current)
+		traversed[current] = true
+		fmt.Println("Current: ", current)
 		s, err = fetchWikiLinks(current)
 		if err != nil {
 			fmt.Println("Error: ", err)
-			break
+			return
 		}
-		_, err, current = checkSimilarity(end, s, current)
-		if err != nil {
-			fmt.Println("Error: ", err)
-			break
+
+		if flag {
+			_, err, currentIndex = checkSimilarity(end+" and "+start, s, traversed)
+			current = s[currentIndex]
+			if err != nil {
+				fmt.Println("Error: ", err)
+				return
+			}
+			flag = true
+		} else {
+			_, err, currentIndex = checkSimilarity(end+" and "+start, s, traversed)
+			current = s[currentIndex]
+			if err != nil {
+				fmt.Println("Error: ", err)
+				return
+			}
 		}
+
 		s = nil
 	}
-	fmt.Println(current)
+	fmt.Println("Current: ", current)
 }

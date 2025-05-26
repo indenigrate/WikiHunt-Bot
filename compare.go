@@ -75,55 +75,57 @@ func fetchWikiLinks(title string) ([]string, error) {
 
 }
 
-type similarityRequest struct {
-	Input1 string `json:"input1"`
-	Input2 string `json:"input2"`
+type similarityBulkRequest struct {
+	Target string   `json:"target"`
+	Inputs []string `json:"inputs"`
 }
 
 type similarityResponse struct {
 	Similarity float64 `json:"similarity"`
 }
 
-func checkSimilarity(target string, choices []string, current string) ([]float64, error, string) {
-	var results []float64
+func checkSimilarity(target string, choices []string, traversed map[string]bool) ([]float64, error, int) {
 	var max float64
-	var maxName string
-	maxName = "No value found yet"
+	maxIndex := -1
 	max = -1
 	url := "http://127.0.0.1:8000/similarity"
 
-	for _, choice := range choices {
-		reqBody := similarityRequest{
-			Input1: target,
-			Input2: choice,
-		}
+	reqBody := similarityBulkRequest{
+		Target: target,
+		Inputs: choices,
+	}
+	// Encode JSON
+	jsonData, err := json.Marshal(reqBody)
+	if err != nil {
+		return nil, fmt.Errorf("failed to encode JSON: %w", err), maxIndex
+	}
 
-		// Encode the request body
-		jsonData, err := json.Marshal(reqBody)
-		if err != nil {
-			return nil, fmt.Errorf("failed to encode JSON: %w", err), maxName
-		}
+	// Send POST request
+	resp, err := http.Post(url, "application/json", bytes.NewBuffer(jsonData))
+	if err != nil {
+		return nil, fmt.Errorf("HTTP request failed: %w", err), maxIndex
+	}
+	defer resp.Body.Close()
 
-		// Send HTTP POST request
-		resp, err := http.Post(url, "application/json", bytes.NewBuffer(jsonData))
-		if err != nil {
-			return nil, fmt.Errorf("HTTP request failed: %w", err), maxName
-		}
-		defer resp.Body.Close()
+	// Parse response
+	var respData struct {
+		Similarities []float64 `json:"similarities"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&respData); err != nil {
+		return nil, fmt.Errorf("failed to decode response: %w", err), maxIndex
+	}
 
-		// Decode response
-		var respData similarityResponse
-		if err := json.NewDecoder(resp.Body).Decode(&respData); err != nil {
-			return nil, fmt.Errorf("failed to decode response: %w", err), maxName
-		}
-
-		results = append(results, respData.Similarity)
-		if respData.Similarity > max && choice != current {
-			max = respData.Similarity
-			maxName = choice
-			fmt.Println("maxx: ", maxName)
+	// Store results and find max
+	for i, sim := range respData.Similarities {
+		if sim > max && !traversed[choices[i]] {
+			max = sim
+			maxIndex = i
 		}
 	}
-	fmt.Println("Compared all possible choices succesfully")
-	return results, nil, maxName
+
+	fmt.Println("Compared all possible choices successfully")
+	if maxIndex == -1 {
+		return nil, fmt.Errorf("Unable to find max value"), maxIndex
+	}
+	return respData.Similarities, nil, maxIndex
 }
