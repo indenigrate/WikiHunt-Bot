@@ -7,27 +7,18 @@ import (
 )
 
 func main() {
-	// // s, err := fetchWikiLinks("Silver")
-	// // s, err := fetchWikiLinks("Litharge")
-	// // s, err := fetchWikiLinks("Gold")
-	// s, err := fetchWikiLinks("Color")
+	var err error
+	// Take input during runtime
+	// fmt.Printf("Title of starting page: ")
+	// start, err := takeInput()
+	// fmt.Printf("Title of ending page: ")
+	// end, err := takeInput()
 	// if err != nil {
-	// 	fmt.Println("Error: ", err)
+	// 	os.Exit(1)
 	// }
 
-	// similar, err, maxName := checkSimilarity("light", s)
-
-	// for index, value := range s {
-	// 	if similar[index] > 0.4 {
-	// 		// fmt.Printf("Value%d:Similarity:%f\n", index, similar[index])
-	// 		fmt.Printf("Value%d: %s Similarity:%f\n", index, value, similar[index])
-
-	// 	}
-	// }
-	// fmt.Println("Max name is : ", maxName)
-
-	// start := "Poison"
-	start := "Malaria"
+	start := "Acid"
+	// start := "Malaria"
 	// start := "Cat"
 	// start := "Electromagnetism"
 	// start := "Art Deco"
@@ -47,9 +38,9 @@ func main() {
 	flag := false
 
 	var s []string
-	var err error
+
 	traversed := make(map[string]bool)
-	fmt.Printf("From %s to %s\n", start, end)
+	fmt.Printf("Going from %s to %s\n", start, end)
 	for current != end {
 		traversed[current] = true
 		// for red text without library
