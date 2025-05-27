@@ -8,7 +8,7 @@ app = FastAPI()
 
 # model = SentenceTransformer('all-mpnet-base-v2')
 # model = SentenceTransformer('all-MiniLM-L6-v2')
-model = SentenceTransformer('all-mpnet-base-v2', device='cuda' if torch.cuda.is_available() else 'cpu')
+model = SentenceTransformer('all-MiniLM-L6-v2', device='cuda' if torch.cuda.is_available() else 'cpu')
 
 
 class BulkSimilarityRequest(BaseModel):

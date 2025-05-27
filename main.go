@@ -23,10 +23,16 @@ func main() {
 	// fmt.Println("Max name is : ", maxName)
 
 	// start := "Poison"
-	start := "Silver"
+	start := "Cat"
+	// start := "Electromagnetism"
+	// start := "Art Deco"
+	// start := "Diethylaminoethanol"
+	// start := "Silver"
 	// end := "Lysergic acid diethylamide"
-	// end := "Lysergic acid"
-	end := "Light"
+	// end := "Al-Qaeda"
+	// end := "Eiffel Tower"
+	end := "Spacecraft"
+	// end := "Light"
 	current := start
 	// current := "Silver"
 	// current := "Dimethylaminoethanol"
@@ -50,6 +56,10 @@ func main() {
 
 		if flag {
 			_, err, currentIndex = checkSimilarity(end+" and "+start, s, traversed)
+			if currentIndex == -1 {
+				fmt.Println("Error: Index out of range")
+				return
+			}
 			current = s[currentIndex]
 			if err != nil {
 				fmt.Println("Error: ", err)
@@ -57,7 +67,11 @@ func main() {
 			}
 			flag = true
 		} else {
-			_, err, currentIndex = checkSimilarity(end+" and "+start, s, traversed)
+			_, err, currentIndex = checkSimilarity(end, s, traversed)
+			if currentIndex == -1 {
+				fmt.Println("Error: Index out of range")
+				return
+			}
 			current = s[currentIndex]
 			if err != nil {
 				fmt.Println("Error: ", err)
