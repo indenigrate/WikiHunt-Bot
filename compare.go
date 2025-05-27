@@ -244,6 +244,7 @@ func getDefinitions(choices []string) (map[string]string, error) {
 				definitionMap[page.Title] = page.Title
 			}
 		}
+
 	}
 	fmt.Println("Fetched all definitions")
 	return definitionMap, nil

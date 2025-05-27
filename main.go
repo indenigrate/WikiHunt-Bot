@@ -1,6 +1,10 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/fatih/color"
+)
 
 func main() {
 	// // s, err := fetchWikiLinks("Silver")
@@ -23,7 +27,8 @@ func main() {
 	// fmt.Println("Max name is : ", maxName)
 
 	// start := "Poison"
-	start := "Cat"
+	start := "Malaria"
+	// start := "Cat"
 	// start := "Electromagnetism"
 	// start := "Art Deco"
 	// start := "Diethylaminoethanol"
@@ -31,7 +36,8 @@ func main() {
 	// end := "Lysergic acid diethylamide"
 	// end := "Al-Qaeda"
 	// end := "Eiffel Tower"
-	end := "Spacecraft"
+	// end := "Spacecraft"
+	end := "Geophysics"
 	// end := "Light"
 	current := start
 	// current := "Silver"
@@ -47,7 +53,12 @@ func main() {
 	fmt.Printf("From %s to %s\n", start, end)
 	for current != end {
 		traversed[current] = true
-		fmt.Println("Current: ", current)
+		// for red text without library
+		// fmt.Println("\033[1;31mCurrent: ", current, "\033[0m")
+
+		// for red text with library
+		color.New(color.FgRed, color.Bold).Println("Current: ", current)
+
 		s, err = fetchWikiLinks(current)
 		if err != nil {
 			fmt.Println("Error: ", err)
@@ -81,5 +92,6 @@ func main() {
 
 		s = nil
 	}
-	fmt.Println("Current: ", current)
+	color.New(color.FgRed, color.Bold).Println("Current: ", current)
+
 }
