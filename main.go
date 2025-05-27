@@ -48,7 +48,6 @@ func main() {
 
 	var s []string
 	var err error
-	var currentIndex int
 	traversed := make(map[string]bool)
 	fmt.Printf("From %s to %s\n", start, end)
 	for current != end {
@@ -66,24 +65,22 @@ func main() {
 		}
 
 		if flag {
-			_, err, currentIndex = checkSimilarity(end+" and "+start, s, traversed)
-			if currentIndex == -1 {
+			_, err, current = checkSimilarity(end+" and "+start, s, traversed)
+			if current == "" {
 				fmt.Println("Error: Index out of range")
 				return
 			}
-			current = s[currentIndex]
 			if err != nil {
 				fmt.Println("Error: ", err)
 				return
 			}
 			flag = true
 		} else {
-			_, err, currentIndex = checkSimilarity(end, s, traversed)
-			if currentIndex == -1 {
+			_, err, current = checkSimilarity(end, s, traversed)
+			if current == "" {
 				fmt.Println("Error: Index out of range")
 				return
 			}
-			current = s[currentIndex]
 			if err != nil {
 				fmt.Println("Error: ", err)
 				return

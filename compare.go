@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"sort"
 	"strings"
 	"time"
 )
@@ -86,14 +87,49 @@ type similarityResponse struct {
 	Similarity float64 `json:"similarity"`
 }
 
-func checkSimilarity(target string, choices []string, traversed map[string]bool) ([]float64, error, int) {
-	var max float64
-	maxIndex := -1
-	max = -1.1
+type choiceWithSimilarity struct {
+	Choice     string
+	Similarity float64
+}
 
-	//getting definitions
-	choicesDefinitionMap, err := getDefinitions(choices)
-	choicesDefinition, err := getSliceFromMap(choices, choicesDefinitionMap)
+func checkSimilarity(target string, choices []string, traversed map[string]bool) ([]float64, error, string) {
+	var max float64
+	maxElement := ""
+	max = -1.1
+	//check similarity for the choices
+	similarity, err := getSimilarities(target, choices)
+	if err != nil {
+		return nil, fmt.Errorf("Unable to get Similarites: %w", err), maxElement
+	}
+
+	// storing choices with similarity
+	var choicesWithSimilarity []choiceWithSimilarity
+	for i, choice := range choices {
+		choicesWithSimilarity = append(choicesWithSimilarity, choiceWithSimilarity{
+			Choice:     choice,
+			Similarity: similarity[i],
+		})
+	}
+
+	// extracting top 50 similarity by sorting
+	sort.Slice(choicesWithSimilarity, func(i, j int) bool {
+		return choicesWithSimilarity[i].Similarity > choicesWithSimilarity[j].Similarity
+	})
+
+	topN := len(choices)
+	if topN > 100 {
+		topN = 99
+	}
+	var topNChoices []string
+	for i := range topN {
+		topNChoices = append(topNChoices, choicesWithSimilarity[i].Choice)
+	}
+	// fmt.Println(topNChoices)
+
+	//getting definitions for topN choices
+	topNchoicesDefinitionMap, err := getDefinitions(topNChoices)
+	topNchoicesDefinition, err := getSliceFromMap(topNChoices, topNchoicesDefinitionMap)
+
 	// for i := 0; i < 5; i++ {
 	// 	fmt.Println("i: ", i)
 	// 	fmt.Println(choices[i])
@@ -102,44 +138,38 @@ func checkSimilarity(target string, choices []string, traversed map[string]bool)
 	// return nil, fmt.Errorf("Ending"), -1
 
 	targetDefinitionMap, err := getDefinitions([]string{target})
-	targetDefinition, err := getSliceFromMap(choices, targetDefinitionMap)
+	var targetDefinition string
+	for _, def := range targetDefinitionMap {
+		targetDefinition = def
+	}
+	// targetDefinition, err := getSliceFromMap(choices, targetDefinitionMap)
 
 	if err != nil {
-		return nil, fmt.Errorf("Unable to fetch Definitions: %w", err), maxIndex
+		return nil, fmt.Errorf("Unable to fetch Definitions: %w", err), maxElement
 	}
 
 	// Get similarities
-	similarity, err := getSimilarities(target, choices)
-	similarityOfDefinition, err := getSimilarities(targetDefinition[0], choicesDefinition)
+	similarityOfDefinition, err := getSimilarities(targetDefinition, topNchoicesDefinition)
 	if err != nil {
-		return nil, fmt.Errorf("Unable to fetch Definitions: %w", err), maxIndex
+		return nil, fmt.Errorf("Unable to get Similarites: %w", err), maxElement
 	}
 
-	// for i := 0; i < 5; i++ {
-	// 	fmt.Println("i: ", i)
-	// 	fmt.Println("choices: ", choices[i])
-	// 	fmt.Println("sim: ", similarity[i])
-	// 	fmt.Println("sim of def: ", similarityOfDefinition[i])
-	// 	fmt.Println("choices def", choicesDefinition[i][:10])
-	// }
-	// return nil, fmt.Errorf("Ending"), -1
-
 	// Find max similarity
-	for i, sim := range similarity {
-		actualSimilarity := sim*0.5 + similarityOfDefinition[i]*0.5
+	for i, sim := range similarityOfDefinition {
+		actualSimilarity := choicesWithSimilarity[i].Similarity*0.5 + sim*0.5
 		// actualSimilarity := sim
-		if actualSimilarity > max && !traversed[choices[i]] {
+		if actualSimilarity > max && !traversed[choicesWithSimilarity[i].Choice] {
 			max = actualSimilarity
-			maxIndex = i
+			maxElement = choicesWithSimilarity[i].Choice
 		}
 	}
 
 	fmt.Println("Compared all possible choices successfully")
-	if maxIndex == -1 {
-		return nil, fmt.Errorf("Unable to find max value"), maxIndex
+	if maxElement == "" {
+		return nil, fmt.Errorf("Unable to find max value"), maxElement
 	}
 	fmt.Printf("The max similarity is: %f\n", max)
-	return similarity, nil, maxIndex
+	return similarity, nil, maxElement
 }
 
 func getSimilarities(target string, choices []string) ([]float64, error) {
