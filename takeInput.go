@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 
@@ -12,8 +13,9 @@ import (
 )
 
 func fetchWikipediaTitles(query string) ([]string, error) {
-	url := fmt.Sprintf("https://en.wikipedia.org/w/api.php?action=opensearch&format=json&search=%s", query)
+	escapedQuery := url.QueryEscape(query)
 
+	url := fmt.Sprintf("https://en.wikipedia.org/w/api.php?action=opensearch&format=json&search=%s", escapedQuery)
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, fmt.Errorf("HTTP request failed: %w", err)
@@ -42,7 +44,6 @@ func fetchWikipediaTitles(query string) ([]string, error) {
 
 func takeInput() (string, error) {
 	reader := bufio.NewReader(os.Stdin)
-
 	for {
 		// fmt.Print("Enter search term for Wikipedia: ")
 		input, _ := reader.ReadString('\n')

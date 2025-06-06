@@ -14,35 +14,54 @@ import (
 
 type WikiResponse struct {
 	Continue struct {
-		PlContinue string `json:"plcontinue"`
-	} `json:"continue"`
+		PlContinue string `json:"plcontinue,omitempty"`
+		BlContinue string `json:"blcontinue,omitempty"`
+	} `json:"continue,omitempty"`
+
 	Query struct {
 		Pages map[string]struct {
-			Links []struct {
-				Title string `json:"title"`
-			} `json:"links"`
-		} `json:"pages"`
+			Links []LinkItem `json:"links,omitempty"`
+		} `json:"pages,omitempty"`
+
+		Backlinks []LinkItem `json:"backlinks,omitempty"`
 	} `json:"query"`
 }
 
-func fetchWikiLinks(title string) ([]string, error) {
+type LinkItem struct {
+	Title  string `json:"title"`
+	PageID int    `json:"pageid,omitempty"`
+	NS     int    `json:"ns,omitempty"`
+}
+
+// make changes to incorporate backlinks
+func fetchWikiLinks(title string, backlinks bool) ([]string, error) {
 	var allLinks []string
 	baseURL := "https://en.wikipedia.org/w/api.php"
-	plContinue := ""
+	continueToken := ""
 
 	for {
-		// Prepare request parameters
 		params := url.Values{}
 		params.Set("action", "query")
 		params.Set("format", "json")
-		params.Set("titles", title)
-		params.Set("prop", "links")
-		params.Set("pllimit", "max")
-		if plContinue != "" {
-			params.Set("plcontinue", plContinue)
+
+		if backlinks {
+			// Fetch backlinks
+			params.Set("list", "backlinks")
+			params.Set("bltitle", title)
+			params.Set("bllimit", "max")
+			if continueToken != "" {
+				params.Set("blcontinue", continueToken)
+			}
+		} else {
+			// Fetch internal page links
+			params.Set("titles", title)
+			params.Set("prop", "links")
+			params.Set("pllimit", "max")
+			if continueToken != "" {
+				params.Set("plcontinue", continueToken)
+			}
 		}
 
-		// Make HTTP request
 		resp, err := http.Get(fmt.Sprintf("%s?%s", baseURL, params.Encode()))
 		if err != nil {
 			return nil, err
@@ -59,23 +78,35 @@ func fetchWikiLinks(title string) ([]string, error) {
 			return nil, err
 		}
 
-		// Extract links from dynamic page ID
-		for _, page := range data.Query.Pages {
-			for _, link := range page.Links {
+		if backlinks {
+			// Collect backlinks
+			for _, link := range data.Query.Backlinks {
 				allLinks = append(allLinks, link.Title)
 			}
-			break // Only one page is relevant
+			if data.Continue.BlContinue == "" {
+				break
+			}
+			continueToken = data.Continue.BlContinue
+		} else {
+			// Collect internal links
+			for _, page := range data.Query.Pages {
+				for _, link := range page.Links {
+					allLinks = append(allLinks, link.Title)
+				}
+				break // Only one page is relevant
+			}
+			if data.Continue.PlContinue == "" {
+				break
+			}
+			continueToken = data.Continue.PlContinue
 		}
-
-		// Check if there's more to fetch
-		if data.Continue.PlContinue == "" {
-			break
-		}
-		plContinue = data.Continue.PlContinue
 	}
-	fmt.Println("Fetched all possible links/choices")
+	if backlinks {
+		fmt.Println("Fetched all possible backlinks")
+	} else {
+		fmt.Println("Fetched all possible links")
+	}
 	return allLinks, nil
-
 }
 
 type similarityBulkRequest struct {
@@ -92,14 +123,14 @@ type choiceWithSimilarity struct {
 	Similarity float64
 }
 
-func checkSimilarity(target string, choices []string, traversed map[string]bool) ([]float64, error, string) {
-	var max float64
-	maxElement := ""
-	max = -1.1
+func checkSimilarity(target string, choices []string, traversed map[string]bool) ([]choiceWithSimilarity, error) {
+	// var max float64
+	// maxElement := "test"
+	// max = -1.1
 	//check similarity for the choices
 	similarity, err := getSimilarities(target, choices)
 	if err != nil {
-		return nil, fmt.Errorf("Unable to get Similarites: %w", err), maxElement
+		return nil, fmt.Errorf("Unable to get Similarites: %w", err)
 	}
 
 	// storing choices with similarity
@@ -111,7 +142,7 @@ func checkSimilarity(target string, choices []string, traversed map[string]bool)
 		})
 	}
 
-	// extracting top 50 similarity by sorting
+	// extracting top N similarity by sorting
 	sort.Slice(choicesWithSimilarity, func(i, j int) bool {
 		return choicesWithSimilarity[i].Similarity > choicesWithSimilarity[j].Similarity
 	})
@@ -145,31 +176,67 @@ func checkSimilarity(target string, choices []string, traversed map[string]bool)
 	// targetDefinition, err := getSliceFromMap(choices, targetDefinitionMap)
 
 	if err != nil {
-		return nil, fmt.Errorf("Unable to fetch Definitions: %w", err), maxElement
+		return nil, fmt.Errorf("Unable to fetch Definitions: %w", err)
 	}
 
 	// Get similarities
 	similarityOfDefinition, err := getSimilarities(targetDefinition, topNchoicesDefinition)
 	if err != nil {
-		return nil, fmt.Errorf("Unable to get Similarites: %w", err), maxElement
+		return nil, fmt.Errorf("Unable to get Similarites: %w", err)
 	}
 
 	// Find max similarity
+	// for i, sim := range similarityOfDefinition {
+	// 	actualSimilarity := choicesWithSimilarity[i].Similarity*0.5 + sim*0.5
+	// 	// actualSimilarity := sim
+	// 	if actualSimilarity > max && !traversed[choicesWithSimilarity[i].Choice] {
+	// 		max = actualSimilarity
+	// 		maxElement = choicesWithSimilarity[i].Choice
+	// 	}
+	// }
+
+	// Calculate actual similarity
+	var topNchoicesWithActualSimilarity []choiceWithSimilarity
 	for i, sim := range similarityOfDefinition {
-		actualSimilarity := choicesWithSimilarity[i].Similarity*0.5 + sim*0.5
-		// actualSimilarity := sim
-		if actualSimilarity > max && !traversed[choicesWithSimilarity[i].Choice] {
-			max = actualSimilarity
-			maxElement = choicesWithSimilarity[i].Choice
+		if traversed[choicesWithSimilarity[i].Choice] {
+			continue
 		}
+		topNchoicesWithActualSimilarity = append(topNchoicesWithActualSimilarity, choiceWithSimilarity{
+			Choice:     choicesWithSimilarity[i].Choice,
+			Similarity: choicesWithSimilarity[i].Similarity*0.5 + sim*0.5})
 	}
+	fmt.Println("Line 208")
+
+	sort.Slice(topNchoicesWithActualSimilarity, func(i, j int) bool {
+		return topNchoicesWithActualSimilarity[i].Similarity > topNchoicesWithActualSimilarity[j].Similarity // descending order
+	})
+	fmt.Println("Line 213")
+
+	// maxElement = topNchoicesWithActualSimilarity[0].Choice
+	// max = topNchoicesWithActualSimilarity[0].Similarity
+
+	// topNchoicesWithActualSimilarity := choicesWithSimilarity[:topN]
+	// for i := range topNchoicesWithActualSimilarity {
+	// 	topNchoicesWithActualSimilarity[i].Similarity = topNchoicesWithActualSimilarity[i].Similarity*0.5 + similarityOfDefinition[i]*0.5
+	// }
+	// sort.Slice(topNchoicesWithActualSimilarity, func(i, j int) bool {
+	// 	return topNchoicesWithActualSimilarity[i].Similarity > topNchoicesWithActualSimilarity[j].Similarity // descending order
+	// })
+	// i := 0
+	// for traversed[topNchoicesWithActualSimilarity[i].Choice] && i < topN {
+	// 	i = i + 1
+	// }
+	// maxElement = topNchoicesWithActualSimilarity[i].Choice
+	// max = topNchoicesWithActualSimilarity[i].Similarity
+
+	// fmt.Println(topNchoicesWithActualSimilarity[:5])
 
 	fmt.Println("Compared all possible choices successfully")
-	if maxElement == "" {
-		return nil, fmt.Errorf("Unable to find max value"), maxElement
-	}
-	fmt.Printf("The max similarity is: %f\n", max)
-	return similarity, nil, maxElement
+	// if maxElement == "" {
+	// 	return nil, fmt.Errorf("Unable to find max value"), maxElement
+	// }
+	// fmt.Printf("The max similarity is: %f\n", max)
+	return topNchoicesWithActualSimilarity, nil
 }
 
 func getSimilarities(target string, choices []string) ([]float64, error) {
