@@ -205,12 +205,10 @@ func checkSimilarity(target string, choices []string, traversed map[string]bool)
 			Choice:     choicesWithSimilarity[i].Choice,
 			Similarity: choicesWithSimilarity[i].Similarity*0.5 + sim*0.5})
 	}
-	fmt.Println("Line 208")
 
 	sort.Slice(topNchoicesWithActualSimilarity, func(i, j int) bool {
 		return topNchoicesWithActualSimilarity[i].Similarity > topNchoicesWithActualSimilarity[j].Similarity // descending order
 	})
-	fmt.Println("Line 213")
 
 	// maxElement = topNchoicesWithActualSimilarity[0].Choice
 	// max = topNchoicesWithActualSimilarity[0].Similarity

@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/fatih/color"
 )
@@ -10,6 +11,7 @@ import (
 var (
 	blueStyler = color.New(color.FgBlue, color.Bold).SprintFunc()
 	redStyler  = color.New(color.FgRed, color.Bold).SprintFunc()
+	timeStart  = time.Now()
 )
 
 func blueBold(text string) {
@@ -48,8 +50,9 @@ func wikiHunt(start string, end string, backlinks bool) {
 	} else {
 		fmt.Printf("Going from %s to %s via links\n", blueBold(start), blueBold(end))
 	}
-
+	timeStart = time.Now()
 	nextGuess([]string{start}, end, false, traversed, 5)
+
 	// nextGuessBFS([]string{start}, end, false, 2)
 	// for current != end {
 	// 	traversed[current] = true
@@ -107,6 +110,8 @@ func nextGuess(start []string, end string, backlinks bool, traversed map[string]
 			s = nil
 		} else {
 			fmt.Println("REACHED!!!!!!")
+			elapsed := time.Since(timeStart)
+			fmt.Printf("Traversal time: %s\n", elapsed)
 			os.Exit(0)
 		}
 		redBold(fmt.Sprintf("Current: %s", current))
