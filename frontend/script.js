@@ -2,6 +2,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const startInput = document.getElementById('start-article');
     const endInput = document.getElementById('end-article');
     const findPathButton = document.getElementById('find-path-btn');
+    const startServerButton = document.getElementById('start-server-btn');
+    const serverStatus = document.getElementById('server-status');
     const resultsContainer = document.getElementById('results-container');
     const pathList = document.getElementById('path-list');
     const loadingSpinner = document.getElementById('loading-spinner');
@@ -9,6 +11,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const startSuggestions = document.getElementById('start-suggestions');
     const endSuggestions = document.getElementById('end-suggestions');
+
+    // Health check function
+    async function healthCheck() {
+        try {
+            const response = await fetch('http://localhost:8080/healthz');
+            if (response.ok) {
+                serverStatus.textContent = 'Server is running!';
+                serverStatus.className = 'text-green-500';
+            } else {
+                serverStatus.textContent = 'Server is starting, please wait a couple of minutes...';
+                serverStatus.className = 'text-orange-500';
+            }
+        } catch (error) {
+            serverStatus.textContent = 'Server is starting, please wait a couple of minutes...';
+            serverStatus.className = 'text-orange-500';
+        }
+    }
+
+    // Call health check on page load
+    healthCheck();
+
+    startServerButton.addEventListener('click', healthCheck);
 
     // 1. Debounce function to limit API calls
     function debounce(func, wait) {

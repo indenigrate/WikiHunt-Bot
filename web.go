@@ -136,11 +136,17 @@ func wikiHuntAsync(task *Task, start string, end string, backlinks bool) {
 	tasksMutex.Unlock()
 }
 
+func healthzHandler(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, "OK")
+}
+
 // StartServer initializes and starts the HTTP server.
 func StartServer() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/path", pathHandler)
 	mux.HandleFunc("/path/", statusHandler)
+	mux.HandleFunc("/healthz", healthzHandler)
 
 	// Add a simple CORS middleware
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
