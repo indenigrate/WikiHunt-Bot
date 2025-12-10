@@ -13,8 +13,7 @@ import (
 	"time"
 )
 
-const pythonServerBaseURL = "http://127.0.0.1:8000"
-
+const pythonServerBaseURL = "https://wikihunt-bot.onrender.com"
 
 type WikiResponse struct {
 	Continue struct {

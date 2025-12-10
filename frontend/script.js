@@ -12,8 +12,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const startSuggestions = document.getElementById('start-suggestions');
     const endSuggestions = document.getElementById('end-suggestions');
 
-    const GO_SERVER_BASE_URL = 'http://localhost:8080';
-    const PYTHON_SERVER_BASE_URL = 'http://localhost:8000';
+    const GO_SERVER_BASE_URL = 'https://wikihunt-bot-1.onrender.com';
+    const PYTHON_SERVER_BASE_URL = 'https://wikihunt-bot.onrender.com';
 
     // Health check function
     async function healthCheck() {
