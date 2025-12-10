@@ -1,3 +1,5 @@
+![Screenshot](pictures/wikihunt-bot-ss.png)
+
 # WikiHunt-Bot
 
 ![Go](https://img.shields.io/badge/Go-1.24+-blue?logo=go)
