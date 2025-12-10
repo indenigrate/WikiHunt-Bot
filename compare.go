@@ -13,6 +13,9 @@ import (
 	"time"
 )
 
+const pythonServerBaseURL = "http://127.0.0.1:8000"
+
+
 type WikiResponse struct {
 	Continue struct {
 		PlContinue string `json:"plcontinue,omitempty"`
@@ -250,7 +253,7 @@ func getSimilarities(target string, choices []string) ([]float64, error) {
 	//timimng execution
 	start := time.Now()
 
-	url := "http://127.0.0.1:8000/similarity"
+	url := pythonServerBaseURL + "/similarity"
 	reqBody := similarityBulkRequest{
 		Target: target,
 		Inputs: choices,

@@ -12,11 +12,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const startSuggestions = document.getElementById('start-suggestions');
     const endSuggestions = document.getElementById('end-suggestions');
 
+    const GO_SERVER_BASE_URL = 'http://localhost:8080';
+    const PYTHON_SERVER_BASE_URL = 'http://localhost:8000';
+
     // Health check function
     async function healthCheck() {
         try {
-            const goServerResponse = await fetch('http://localhost:8080/healthz');
-            const pythonServerResponse = await fetch('http://localhost:8000/healthz');
+            const goServerResponse = await fetch(`${GO_SERVER_BASE_URL}/healthz`);
+            const pythonServerResponse = await fetch(`${PYTHON_SERVER_BASE_URL}/healthz`);
 
             if (goServerResponse.ok && pythonServerResponse.ok) {
                 serverStatus.textContent = 'Both servers are running!';
@@ -182,7 +185,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            const response = await fetch('http://localhost:8080/path', {
+            const response = await fetch(`${GO_SERVER_BASE_URL}/path`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -210,7 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function startPolling(taskId) {
         pollingInterval = setInterval(async () => {
             try {
-                const response = await fetch(`http://localhost:8080/path/${taskId}`);
+                const response = await fetch(`${GO_SERVER_BASE_URL}/path/${taskId}`);
                 if (!response.ok) {
                     // Stop polling on error
                     clearInterval(pollingInterval);
