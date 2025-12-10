@@ -1,4 +1,17 @@
-venv
+# Python
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
 .env
-__pycache__
-vendor
+
+# Go
+vendor/
+WikiHunt-Bot
+*.exe
+
+# OS specific
+.DS_Store
+Thumbs.db
