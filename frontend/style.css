@@ -1,0 +1,37 @@
+/* Add any custom styles here */
+#results-container {
+    margin-top: 2rem;
+    text-align: center;
+}
+
+#path-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+    padding: 0;
+    list-style: none;
+}
+
+.path-item {
+    background-color: #fff7ed;
+    border: 1px solid #fed7aa;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    font-weight: 500;
+    color: #7c2d12;
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+}
+
+.path-item.start-end {
+    background-color: #d97706;
+    color: white;
+    font-weight: bold;
+}
+
+.path-arrow {
+    display: flex;
+    align-items: center;
+    font-size: 1.5rem;
+    color: #f97316;
+}

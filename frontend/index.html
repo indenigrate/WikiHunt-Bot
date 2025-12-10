@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>WikiHunt-Bot Homepage</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings:
+                'FILL' 0,
+                'wght' 400,
+                'GRAD' 0,
+                'opsz' 24;
+        }
+    </style>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#d97706", // amber-600
+                        "primary-hover": "#b45309", // amber-700
+                        "background-light": "#fff7ed", // orange-50
+                        "text-main": "#451a03", // amber-950
+                        "text-secondary": "#7c2d12", // orange-900
+                        "border-color": "#fed7aa", // orange-200
+                        "focus-ring": "#fb923c", // orange-400
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+    <script src="script.js" defer></script>
+</head>
+
+<body class="font-display bg-background-light text-text-main">
+    <div class="relative flex min-h-screen w-full flex-col">
+        <div class="flex h-full grow flex-col">
+            <div class="flex flex-1 justify-center px-4 py-5 sm:px-8 md:px-20 lg:px-40">
+                <div class="flex w-full max-w-[960px] flex-1 flex-col">
+                    <header
+                        class="flex items-center justify-between whitespace-nowrap border-b border-solid border-border-color/50 px-4 py-3 md:px-10">
+                        <div class="flex items-center gap-4">
+                            <div class="size-6 text-primary">
+                                <svg fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M16.92 6.08A7.5 7.5 0 0 0 4.5 13.52v.02c0 4.13 3.37 7.5 7.5 7.5s7.5-3.37 7.5-7.5a7.48 7.48 0 0 0-2.58-5.42zM12 19.52c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z">
+                                    </path>
+                                    <path
+                                        d="m16.22 11.38-2.5-2.5a.75.75 0 0 0-1.06 1.06l1.22 1.22H8.25a.75.75 0 0 0 0 1.5h5.63l-1.22 1.22a.75.75 0 1 0 1.06 1.06l2.5-2.5c.29-.29.29-.77 0-1.06z">
+                                    </path>
+                                </svg>
+                            </div>
+                            <h2 class="text-lg font-bold leading-tight tracking-[-0.015em] text-text-main">WikiHunt-Bot
+                            </h2>
+                        </div>
+                        <div class="flex flex-1 items-center justify-end gap-4 md:gap-8">
+                            <a class="text-sm font-medium leading-normal text-text-secondary hover:text-primary"
+                                href="#">About</a>
+                            <a class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-primary-hover"
+                                href="#">
+                                <span class="truncate">GitHub</span>
+                            </a>
+                        </div>
+                    </header>
+                    <main class="flex flex-1 flex-col items-center justify-center py-10 md:py-20">
+                        <div class="w-full text-center mb-8">
+                            <h1
+                                class="text-text-main text-4xl font-black leading-tight tracking-[-0.033em] sm:text-5xl">
+                                WikiHunt: The Semantic Wikipedia Pathfinder
+                            </h1>
+                            <p class="mt-2 text-text-secondary text-sm font-normal leading-normal sm:text-base">
+                                Discover the shortest connection between any two articles.
+                            </p>
+                        </div>
+                        <div class="w-full max-w-2xl px-4 py-3">
+                            <div class="flex flex-col gap-4 md:flex-row md:items-end">
+                                <label class="relative flex flex-1 flex-col min-w-40">
+                                    <p class="pb-2 text-base font-medium text-text-main">Starting Article</p>
+                                    <input id="start-article" autocomplete="off"
+                                        class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg border border-border-color bg-white/50 p-[15px] text-base font-normal leading-normal text-text-main placeholder:text-text-secondary/70 focus:border-primary focus:outline-0 focus:ring-2 focus:ring-focus-ring/50"
+                                        placeholder="e.g., Artificial Intelligence" value="" />
+
+                                    <div id="start-suggestions"
+                                        class="absolute top-full left-0 z-50 w-full mt-1 hidden rounded-lg border border-border-color bg-white shadow-xl">
+                                        <ul class="max-h-60 overflow-auto py-2 text-base text-text-main"></ul>
+                                    </div>
+                                </label>
+
+                                <label class="relative flex flex-1 flex-col min-w-40">
+                                    <p class="pb-2 text-base font-medium text-text-main">Target Article</p>
+                                    <input id="end-article" autocomplete="off"
+                                        class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg border border-border-color bg-white/50 p-[15px] text-base font-normal leading-normal text-text-main placeholder:text-text-secondary/70 focus:border-primary focus:outline-0 focus:ring-2 focus:ring-focus-ring/50"
+                                        placeholder="e.g., Philosophy" value="" />
+
+                                    <div id="end-suggestions"
+                                        class="absolute top-full left-0 z-50 w-full mt-1 hidden rounded-lg border border-border-color bg-white shadow-xl">
+                                        <ul class="max-h-60 overflow-auto py-2 text-base text-text-main"></ul>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="mt-8 flex justify-center">
+                            <button id="find-path-btn"
+                                class="flex min-w-[120px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-5 bg-primary text-white text-base font-bold leading-normal tracking-[0.015em] hover:bg-primary-hover focus:outline-none focus:ring-4 focus:ring-focus-ring/50">
+                                <span class="truncate">Find Path</span>
+                            </button>
+                        </div>
+                        <div id="results-container" class="w-full max-w-4xl mt-10 hidden">
+                            <div id="loading-spinner" class="hidden">
+                                <div class="flex justify-center items-center">
+                                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                                    <p class="ml-3 text-text-secondary">Finding the best path...</p>
+                                </div>
+                            </div>
+                            <div id="error-message" class="hidden p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50"
+                                role="alert">
+                                <!-- Error message will be inserted here -->
+                            </div>
+                            <div id="path-output">
+                                <h2 class="text-2xl font-bold text-text-main mb-4">Path Found:</h2>
+                                <ul id="path-list" class="flex flex-wrap items-center justify-center gap-2 md:gap-4">
+                                    <!-- Path items will be injected here by JavaScript -->
+                                </ul>
+                            </div>
+                        </div>
+                    </main>
+                    <footer class="flex flex-col gap-6 px-5 py-10 text-center">
+                        <div class="flex flex-wrap items-center justify-center gap-6">
+                            <a class="text-text-secondary/80 hover:text-primary" href="https://github.com/indenigrate">
+                                <svg class="lucide lucide-github" fill="none" height="24" stroke="currentColor"
+                                    stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24"
+                                    width="24" xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4">
+                                    </path>
+                                </svg>
+                                <span class="sr-only">GitHub</span>
+                            </a>
+                        </div>
+                        <p class="text-sm text-text-secondary/80 font-normal leading-normal">© 2024 WikiHunt-Bot.
+                            Created by [Author/Team Name]</p>
+                    </footer>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

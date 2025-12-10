@@ -1,26 +1,13 @@
 package main
 
 import (
-	"fmt"
-	"os"
+	"log"
 	"time"
-
-	"github.com/fatih/color"
 )
 
 var (
-	blueStyler = color.New(color.FgBlue, color.Bold).SprintFunc()
-	redStyler  = color.New(color.FgRed, color.Bold).SprintFunc()
-	timeStart  = time.Now()
+	timeStart = time.Now()
 )
-
-func blueBold(text string) {
-	fmt.Println(blueStyler(text))
-}
-
-func redBold(text string) {
-	fmt.Println(redStyler(text))
-}
 
 // backlinks is true when we try to find a path from end to start
 // it is false when we go in the usual way from start to end
@@ -41,14 +28,10 @@ func wikiHunt(start string, end string, backlinks bool) {
 	// current := start
 	traversed := make(map[string]bool)
 
-	// text color
-	blueBold := color.New(color.FgBlue, color.Bold).SprintFunc()
-	// redBold := color.New(color.FgRed, color.Bold).SprintFunc()
-
 	if backlinks {
-		fmt.Printf("Going from %s to %s via backlinks\n", blueBold(start), blueBold(end))
+		log.Printf("Going from %s to %s via backlinks\n", start, end)
 	} else {
-		fmt.Printf("Going from %s to %s via links\n", blueBold(start), blueBold(end))
+		log.Printf("Going from %s to %s via links\n", start, end)
 	}
 	timeStart = time.Now()
 	nextGuess([]string{start}, end, false, traversed, 5)
@@ -57,29 +40,29 @@ func wikiHunt(start string, end string, backlinks bool) {
 	// for current != end {
 	// 	traversed[current] = true
 	// 	// for red text without library
-	// 	// fmt.Println("\033[1;31mCurrent: ", current, "\033[0m")
+	// 	// log.Println("\033[1;31mCurrent: ", current, "\033[0m")
 
 	// 	// for red text with library
-	// 	fmt.Println("Current: ", redBold(current))
+	// 	log.Println("Current: ", redBold(current))
 
 	// 	s, err = fetchWikiLinks(current, backlinks)
 	// 	if err != nil {
-	// 		fmt.Println("Error: ", err)
+	// 		log.Println("Error: ", err)
 	// 		return
 	// 	}
 	// 	topNchoicesWithActualSimilarity, err, current := checkSimilarity(end, s, traversed)
 	// 	if current == "" {
-	// 		fmt.Println("Error: Unable to find maximum similarit element || ", err)
+	// 		log.Println("Error: Unable to find maximum similarit element || ", err)
 	// 		return
 	// 	}
 	// 	if err != nil {
-	// 		fmt.Println("Error: ", err)
+	// 		log.Println("Error: ", err)
 	// 		return
 	// 	}
 	// 	s = nil
 	// }
-	// fmt.Println("Current: ", redBold(current))
-	// fmt.Println()
+	// log.Println("Current: ", redBold(current))
+	// log.Println()
 }
 
 func nextGuess(start []string, end string, backlinks bool, traversed map[string]bool, depth int) {
@@ -88,10 +71,10 @@ func nextGuess(start []string, end string, backlinks bool, traversed map[string]
 	for _, current := range start {
 		if current != end {
 			traversed[current] = true
-			redBold(fmt.Sprintf("Current: %s", current))
+			log.Printf("Current: %s", current)
 			s, err := fetchWikiLinks(current, backlinks)
 			if err != nil {
-				fmt.Println("Error: ", err)
+				log.Println("Error: ", err)
 				return
 			}
 			topNchoicesWithActualSimilarity, err = checkSimilarity(end, s, traversed)
@@ -100,22 +83,22 @@ func nextGuess(start []string, end string, backlinks bool, traversed map[string]
 			}
 			current = topNchoicesWithActualSimilarity[0].Choice
 			if current == "" {
-				fmt.Println("Error: Unable to find maximum similarit element || ", err)
+				log.Println("Error: Unable to find maximum similarit element || ", err)
 				return
 			}
 			if err != nil {
-				fmt.Println("Error: ", err)
+				log.Println("Error: ", err)
 				return
 			}
 			s = nil
 		} else {
-			fmt.Println("REACHED!!!!!!")
+			log.Println("REACHED!!!!!!")
 			elapsed := time.Since(timeStart)
-			fmt.Printf("Traversal time: %s\n", elapsed)
-			os.Exit(0)
+			log.Printf("Traversal time: %s\n", elapsed)
+			return // return instead of os.Exit
 		}
-		redBold(fmt.Sprintf("Current: %s", current))
-		fmt.Println()
+		log.Printf("Current: %s", current)
+		log.Println()
 
 		var nextChoices []string
 		if depth > len(topNchoicesWithActualSimilarity) {
@@ -124,9 +107,9 @@ func nextGuess(start []string, end string, backlinks bool, traversed map[string]
 		for i := 0; i < depth; i++ {
 			nextChoices = append(nextChoices, topNchoicesWithActualSimilarity[i].Choice)
 		}
-		blueBold(fmt.Sprintf("Next choices are: ") + fmt.Sprintln(nextChoices))
+		log.Printf("Next choices are: %v\n", nextChoices)
 		nextGuess(nextChoices, end, backlinks, traversed, depth)
-		fmt.Println("!!!!!!!!!!!!! DEPTH 1 OVER !!!!!!!!!!!!!!!!!!")
+		log.Println("!!!!!!!!!!!!! DEPTH 1 OVER !!!!!!!!!!!!!!!!!!")
 	}
 }
 
@@ -154,22 +137,22 @@ func nextGuessBFS(start []string, end string, backlinks bool, depthLimit int) {
 		current := item.Title
 		currDepth := item.Depth
 
-		redBold(fmt.Sprintf("Current: %s (depth %d)", current, currDepth))
+		log.Printf("Current: %s (depth %d)", current, currDepth)
 
 		if current == end {
-			fmt.Println("REACHED!!!!!!")
-			os.Exit(0)
+			log.Println("REACHED!!!!!!")
+			return // return instead of os.Exit
 		}
 
 		links, err := fetchWikiLinks(current, backlinks)
 		if err != nil {
-			fmt.Println("Error fetching links for", current, ":", err)
+			log.Println("Error fetching links for", current, ":", err)
 			continue
 		}
 
 		topChoices, err := checkSimilarity(end, links, traversed)
 		if err != nil {
-			fmt.Println("Error checking similarity:", err)
+			log.Println("Error checking similarity:", err)
 			continue
 		}
 
@@ -182,7 +165,7 @@ func nextGuessBFS(start []string, end string, backlinks bool, depthLimit int) {
 			}
 		}
 
-		fmt.Println()
+		log.Println()
 	}
-	fmt.Println("Target not found.")
+	log.Println("Target not found.")
 }

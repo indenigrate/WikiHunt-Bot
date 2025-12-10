@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"sort"
@@ -62,7 +63,13 @@ func fetchWikiLinks(title string, backlinks bool) ([]string, error) {
 			}
 		}
 
-		resp, err := http.Get(fmt.Sprintf("%s?%s", baseURL, params.Encode()))
+		client := &http.Client{}
+		req, err := http.NewRequest("GET", fmt.Sprintf("%s?%s", baseURL, params.Encode()), nil)
+		if err != nil {
+			return nil, err
+		}
+		req.Header.Set("User-Agent", "WikiHunt-Bot/1.0")
+		resp, err := client.Do(req)
 		if err != nil {
 			return nil, err
 		}
@@ -75,6 +82,7 @@ func fetchWikiLinks(title string, backlinks bool) ([]string, error) {
 
 		var data WikiResponse
 		if err := json.Unmarshal(body, &data); err != nil {
+			log.Printf("Error unmarshalling wikipedia response. Body: %s", string(body))
 			return nil, err
 		}
 
@@ -102,9 +110,9 @@ func fetchWikiLinks(title string, backlinks bool) ([]string, error) {
 		}
 	}
 	if backlinks {
-		fmt.Println("Fetched all possible backlinks")
+		log.Println("Fetched all possible backlinks")
 	} else {
-		fmt.Println("Fetched all possible links")
+		log.Println("Fetched all possible links")
 	}
 	return allLinks, nil
 }
@@ -229,11 +237,11 @@ func checkSimilarity(target string, choices []string, traversed map[string]bool)
 
 	// fmt.Println(topNchoicesWithActualSimilarity[:5])
 
-	fmt.Println("Compared all possible choices successfully")
+	log.Println("Compared all possible choices successfully")
 	// if maxElement == "" {
 	// 	return nil, fmt.Errorf("Unable to find max value"), maxElement
 	// }
-	// fmt.Printf("The max similarity is: %f\n", max)
+	// log.Printf("The max similarity is: %f\n", max)
 	return topNchoicesWithActualSimilarity, nil
 }
 
@@ -264,13 +272,19 @@ func getSimilarities(target string, choices []string) ([]float64, error) {
 	var respData struct {
 		Similarities []float64 `json:"similarities"`
 	}
-	if err := json.NewDecoder(resp.Body).Decode(&respData); err != nil {
+	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	if err := json.Unmarshal(bodyBytes, &respData); err != nil {
+		log.Printf("Error unmarshalling sbert response. Body: %s", string(bodyBytes))
 		return nil, fmt.Errorf("failed to decode response: %w", err)
 	}
 
 	//timing execution
 	elapsed := time.Since(start)
-	fmt.Printf("Execution of getSimilarities took %s\n", elapsed)
+	log.Printf("Execution of getSimilarities took %s\n", elapsed)
 	return respData.Similarities, nil
 }
 
@@ -299,7 +313,13 @@ func getDefinitions(choices []string) (map[string]string, error) {
 		// return nil, fmt.Errorf("ending")
 
 		// Send the HTTP GET request
-		resp, err := http.Get(endpoint + "?" + params.Encode())
+		client := &http.Client{}
+		req, err := http.NewRequest("GET", endpoint+"?"+params.Encode(), nil)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create request: %v", err)
+		}
+		req.Header.Set("User-Agent", "WikiHunt-Bot/1.0")
+		resp, err := client.Do(req)
 		if err != nil {
 			return nil, fmt.Errorf("failed to fetch definitions: %v", err)
 		}
@@ -341,7 +361,7 @@ func getDefinitions(choices []string) (map[string]string, error) {
 		}
 
 	}
-	fmt.Println("Fetched all definitions")
+	log.Println("Fetched all definitions")
 	return definitionMap, nil
 }
 

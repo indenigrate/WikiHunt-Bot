@@ -31,6 +31,8 @@ def compute_bulk_similarity(request: BulkSimilarityRequest):
 
         # Compute cosine similarities
         similarities = util.cos_sim(target_embedding, input_embeddings).squeeze().tolist()
+        if not isinstance(similarities, list):
+            similarities = [similarities]
         return {"similarities": similarities}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
