@@ -15,16 +15,21 @@ document.addEventListener('DOMContentLoaded', () => {
     // Health check function
     async function healthCheck() {
         try {
-            const response = await fetch('http://localhost:8080/healthz');
-            if (response.ok) {
-                serverStatus.textContent = 'Server is running!';
+            const goServerResponse = await fetch('http://localhost:8080/healthz');
+            const pythonServerResponse = await fetch('http://localhost:8000/healthz');
+
+            if (goServerResponse.ok && pythonServerResponse.ok) {
+                serverStatus.textContent = 'Both servers are running!';
                 serverStatus.className = 'text-green-500';
             } else {
-                serverStatus.textContent = 'Server is starting, please wait a couple of minutes...';
+                let statusMessage = 'Server status: ';
+                statusMessage += `Go server ${goServerResponse.ok ? 'OK' : 'starting...'}. `;
+                statusMessage += `Python server ${pythonServerResponse.ok ? 'OK' : 'starting...'}.`;
+                serverStatus.textContent = statusMessage;
                 serverStatus.className = 'text-orange-500';
             }
         } catch (error) {
-            serverStatus.textContent = 'Server is starting, please wait a couple of minutes...';
+            serverStatus.textContent = 'One or both servers are starting, please wait a couple of minutes...';
             serverStatus.className = 'text-orange-500';
         }
     }
