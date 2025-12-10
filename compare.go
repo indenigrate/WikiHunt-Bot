@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-const pythonServerBaseURL = "https://wikihunt-bot.onrender.com"
+const pythonServerBaseURL = "https://devanshsoni899-newenv--bge-similarity-api-fastapi-app.modal.run"
 
 type WikiResponse struct {
 	Continue struct {

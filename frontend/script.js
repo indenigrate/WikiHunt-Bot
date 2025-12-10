@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const endSuggestions = document.getElementById('end-suggestions');
 
     const GO_SERVER_BASE_URL = 'https://wikihunt-bot-1.onrender.com';
-    const PYTHON_SERVER_BASE_URL = 'https://wikihunt-bot.onrender.com';
+    const PYTHON_SERVER_BASE_URL = 'https://devanshsoni899-newenv--bge-similarity-api-fastapi-app.modal.run';
 
     // Health check function
     async function healthCheck() {
